@@ -18,7 +18,8 @@ module Mastermind
       self.secret_code = codemaker.create_code
       display_rules if codebreaker.type == 'human'
       until game_end
-        take_guess
+        guess = take_guess
+        p guess
         if turns <= 0
           puts 'You lose!' if codebreaker.type == 'human'
           self.game_end = true
@@ -29,8 +30,12 @@ module Mastermind
     def take_guess
       puts 'Input your guess'
       guess = gets.chomp.downcase.split(' ')
-      p guess
-      p correct_input?(guess)
+      if correct_input?(guess)
+        guess
+      else
+        puts 'Incorrect input, please input your guess again'
+        take_guess
+      end
     end
 
     def correct_input?(input)
