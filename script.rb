@@ -28,8 +28,17 @@ module Mastermind
 
     def take_guess
       puts 'Input your guess'
-      guess = gets.chomp.split(' ')
+      guess = gets.chomp.downcase.split(' ')
       p guess
+      p correct_input?(guess)
+    end
+
+    def correct_input?(input)
+      if input.length != HOLES || input.any? { |color| !COLORS.include?(color) }
+        false
+      else
+        true
+      end
     end
 
     def display_rules
