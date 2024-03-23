@@ -19,7 +19,7 @@ module Mastermind
       display_rules if codebreaker.type == 'human'
       until game_end
         guess = take_guess
-        p guess
+        check_guess(guess)
         if turns <= 0
           puts 'You lose!' if codebreaker.type == 'human'
           self.game_end = true
@@ -45,6 +45,37 @@ module Mastermind
         true
       end
     end
+
+    def check_guess(guess)
+      if guess == secret_code
+        codebreaker_wins
+      else
+        display_hints(guess)
+      end
+    end
+
+    def display_hints(guess)
+      buff_code = secret_code.clone
+      buff_guess = []
+      guess.each_with_index do |pos, i|
+        if pos == secret_code[i]
+          puts 'red key peg'
+          buff_code.delete_at(i)
+        else
+          buff_guess.push(pos)
+        end
+      end
+      buff_guess.each do |pos|
+        if buff_code.include?(pos)
+          puts 'white key peg'
+          buff_code.delete(pos)
+        end
+      end
+    end
+
+    def codebreaker_wins; end
+
+    def codemaker_wins; end
 
     def display_rules
       puts 'Possible colors:'
