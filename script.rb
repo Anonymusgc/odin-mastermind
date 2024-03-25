@@ -66,14 +66,11 @@ module Mastermind
         end
       end
       buff_guess.each do |pos|
-        if buff_code.include?(pos)
-          puts 'white key peg'
-          incorrect_guess = false
-          buff_code.delete(pos)
+        next unless buff_code.include?(pos)
 
-        else
-          p 'test'
-        end
+        puts 'white key peg'
+        incorrect_guess = false
+        buff_code.delete_at(buff_code.index(pos))
       end
 
       puts "\nNo hints, incorrect guess\n" if incorrect_guess
