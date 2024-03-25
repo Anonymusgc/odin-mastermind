@@ -16,15 +16,11 @@ module Mastermind
 
     def play
       self.secret_code = codemaker.create_code
-      display_rules if codebreaker.type == 'human'
+      codebreaker.display_rules
       until game_end
         guess = take_guess
         check_guess(guess)
         update_turns
-        if turns <= 0
-          codemaker_wins
-          self.game_end = true
-        end
       end
     end
 
@@ -56,6 +52,7 @@ module Mastermind
     end
 
     def display_hints(guess)
+      puts "\nHints:"
       buff_code = secret_code.clone
       buff_guess = []
       incorrect_guess = true
@@ -69,30 +66,38 @@ module Mastermind
         end
       end
       buff_guess.each do |pos|
-        next unless buff_code.include?(pos)
+        if buff_code.include?(pos)
+          puts 'white key peg'
+          incorrect_guess = false
+          buff_code.delete(pos)
 
-        puts 'white key peg'
-        incorrect_guess = false
-        buff_code.delete(pos)
+        else
+          p 'test'
+        end
       end
 
-      puts "Incorrect guess\n" if incorrect_guess
+      puts "\nNo hints, incorrect guess\n" if incorrect_guess
+      puts "\n"
     end
-
-    def codebreaker_wins; end
-
-    def codemaker_wins; end
 
     def update_turns
       self.turns -= 1
       puts "#{turns} turns left"
+      return unless turns <= 0
+
+      codemaker_wins
     end
 
-    def display_rules
-      puts 'Possible colors:'
-      COLORS.each { |color| puts "- #{color}" }
-      puts "To guess the code you should input #{HOLES} color names, for example:"
-      puts 'red blue yellow green'
+    def codebreaker_wins
+      puts "#{codebreaker.type.capitalize} Player wins"
+      self.game_end = true
+      p secret_code
+    end
+
+    def codemaker_wins
+      puts "#{codemaker.type.capitalize} Player wins!"
+      self.game_end = true
+      p secret_code
     end
 
     attr_accessor :turns, :game_end, :secret_code, :codemaker, :codebreaker
@@ -102,6 +107,13 @@ module Mastermind
   class HumanPlayer
     def initialize
       @type = 'human'
+    end
+
+    def display_rules
+      puts "\nTo guess the code you should input #{HOLES} color names, for example:"
+      puts 'red blue yellow green'
+      puts "\nPossible colors:"
+      COLORS.each { |color| puts "- #{color}" }
     end
 
     attr_reader :type
@@ -120,6 +132,15 @@ module Mastermind
         COLORS[random_number]
       end
     end
+
+    def display_rules
+      puts "\nCreate code for the computer to guess"
+      puts "Code length should be: #{HOLES}"
+      puts 'Example: red blue yellow green'
+      puts "\nPossible colors:"
+      COLORS.each { |color| puts "- #{color}" }
+    end
+
     attr_reader :type
   end
 end
