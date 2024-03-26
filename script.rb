@@ -16,30 +16,12 @@ module Mastermind
 
     def play
       self.secret_code = codemaker.create_code
+
       codebreaker.display_rules
       until game_end
-        guess = take_guess
+        guess = codebreaker.take_guess
         check_guess(guess)
         update_turns
-      end
-    end
-
-    def take_guess
-      puts 'Input your guess'
-      guess = gets.chomp.downcase.split(' ')
-      if correct_input?(guess)
-        guess
-      else
-        puts 'Incorrect input, please input your guess again'
-        take_guess
-      end
-    end
-
-    def correct_input?(input)
-      if input.length != HOLES || input.any? { |color| !COLORS.include?(color) }
-        false
-      else
-        true
       end
     end
 
@@ -86,13 +68,13 @@ module Mastermind
     end
 
     def codebreaker_wins
-      puts "#{codebreaker.type.capitalize} Player wins"
+      puts "\n #{codebreaker.type.capitalize} Player wins"
       self.game_end = true
       p secret_code
     end
 
     def codemaker_wins
-      puts "#{codemaker.type.capitalize} Player wins!"
+      puts "\n #{codemaker.type.capitalize} Player wins!"
       self.game_end = true
       p secret_code
     end
@@ -111,6 +93,25 @@ module Mastermind
       puts 'red blue yellow green'
       puts "\nPossible colors:"
       COLORS.each { |color| puts "- #{color}" }
+    end
+
+    def take_guess
+      puts 'Input your guess'
+      guess = gets.chomp.downcase.split(' ')
+      if correct_input?(guess)
+        guess
+      else
+        puts 'Incorrect input, please input your guess again'
+        take_guess
+      end
+    end
+
+    def correct_input?(input)
+      if input.length != HOLES || input.any? { |color| !COLORS.include?(color) }
+        false
+      else
+        true
+      end
     end
 
     attr_reader :type
