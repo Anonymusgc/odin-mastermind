@@ -6,15 +6,18 @@ module Mastermind
   HOLES = 4
   # mastermind game class
   class Game
+    attr_accessor :turns, :game_end, :secret_code, :codemaker, :codebreaker
+
     def initialize
       @turns = 8
       @game_end = false
-      @codemaker = ComputerPlayer.new
-      @codebreaker = HumanPlayer.new
+      # @codemaker = ComputerPlayer.new
+      # @codebreaker = HumanPlayer.new
       puts 'Mastermind'
     end
 
     def play
+      choose_gamemode
       self.secret_code = codemaker.create_code
 
       codebreaker.display_rules
@@ -22,6 +25,25 @@ module Mastermind
         guess = codebreaker.take_guess
         check_guess(guess)
         update_turns
+      end
+    end
+
+    def choose_gamemode
+      puts '--------------------------------------'
+      puts 'Select what gamemode you want to play: '
+      puts '1. Code creator'
+      puts '2. Code guesser'
+      puts '--------------------------------------'
+      gamemode = gets.chomp
+      if gamemode == '1'
+        self.codebreaker = ComputerPlayer.new
+        self.codemaker = HumanPlayer.new
+      elsif gamemode == '2'
+        self.codebreaker = HumanPlayer.new
+        self.codemaker = ComputerPlayer.new
+      else
+        puts 'Incorrect choice, please input again'
+        choose_gamemode
       end
     end
 
@@ -78,8 +100,6 @@ module Mastermind
       self.game_end = true
       p secret_code
     end
-
-    attr_accessor :turns, :game_end, :secret_code, :codemaker, :codebreaker
   end
 
   # human player class
