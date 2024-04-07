@@ -4,6 +4,7 @@
 module Mastermind
   COLORS = %w[red blue green yellow purple orange].freeze
   HOLES = 4
+
   # mastermind game class
   class Game
     attr_accessor :turns, :game_end, :secret_code, :codemaker, :codebreaker
@@ -18,9 +19,9 @@ module Mastermind
 
     def play
       choose_gamemode
+      codebreaker.display_rules
       self.secret_code = codemaker.create_code
 
-      codebreaker.display_rules
       until game_end
         guess = codebreaker.take_guess
         check_guess(guess)
@@ -115,6 +116,18 @@ module Mastermind
       COLORS.each { |color| puts "- #{color}" }
     end
 
+    def create_code
+      puts 'Input secret code: '
+      puts '(example: red blue yellow green)'
+      code = gets.chomp.downcase.split(' ')
+      if correct_input?(code)
+        code
+      else
+        puts 'Incorrect input, please input your secret code again'
+        create_code
+      end
+    end
+
     def take_guess
       puts 'Input your guess'
       guess = gets.chomp.downcase.split(' ')
@@ -154,8 +167,7 @@ module Mastermind
     def display_rules
       puts "\nCreate code for the computer to guess"
       puts "Code length should be: #{HOLES}"
-      puts 'Example: red blue yellow green'
-      puts "\nPossible colors:"
+      puts 'Possible colors:'
       COLORS.each { |color| puts "- #{color}" }
     end
 
