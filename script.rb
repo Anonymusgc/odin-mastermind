@@ -12,6 +12,7 @@ module Mastermind
     def initialize
       @turns = 8
       @game_end = false
+      @response = [[], []]
       # @codemaker = ComputerPlayer.new
       # @codebreaker = HumanPlayer.new
       puts 'Mastermind'
@@ -71,13 +72,14 @@ module Mastermind
           buff_code.delete_at(buff_code.index(pos) || buff_code.length)
         else
           buff_guess.push(pos)
+          res[0].push(0)
         end
       end
       buff_guess.each do |pos|
         next unless buff_code.include?(pos)
 
         puts 'white key peg'
-        res[1].push(1)
+        res[1].push(pos)
         incorrect_guess = false
         buff_code.delete_at(buff_code.index(pos))
       end
@@ -134,7 +136,7 @@ module Mastermind
       end
     end
 
-    def take_guess
+    def take_guess(_response)
       puts 'Input your guess'
       guess = gets.chomp.downcase.split(' ')
       if correct_input?(guess)
@@ -158,8 +160,12 @@ module Mastermind
 
   # computer player class
   class ComputerPlayer
+    attr_reader :type
+    attr_accessor :prev_guess, :color_array
+
     def initialize
       @type = 'computer'
+      @color_array = COLORS.map(&:clone)
     end
 
     def create_code
@@ -170,8 +176,80 @@ module Mastermind
       end
     end
 
-    def take_guess
+    def take_guess(response)
       guess = Array.new(HOLES)
+
+      if (response[0].empty? || response[0].all? { |pos| pos == 0 }) && response[1].empty? && !prev_guess.nil?
+        prev_guess.each do |pos|
+          color_array.delete(pos)
+        end
+      elsif !prev_guess.nil?
+        prev_guess.each_with_index do |pos, i|
+          guess[i] = pos if response[0][i] == 1
+        end
+      end
+
+      guess = handle_white_pegs(guess, response)
+
+      self.prev_guess = guess
+      p guess
+      guess
+    end
+
+    def handle_white_pegs(guess, response)
+      rand_pos = ''
+      if response[1].length > 1 && !prev_guess.nil?
+        guess = guess.map.with_index do |pos, i|
+          if pos.nil?
+            loop do
+              random_number = rand(response[1].length)
+              rand_pos = response[1][random_number]
+              break if rand_pos != prev_guess[i]
+            end
+            rand_pos
+          else
+            pos
+          end
+        end
+        p guess
+      elsif response[1].length == 1 && !prev_guess.nil?
+        guess = guess.map.with_index do |pos, i|
+          if pos.nil?
+
+            random_number = rand(response[1].length)
+            rand_pos = response[1][random_number]
+            if rand_pos == prev_guess[i]
+              random_number = rand(color_array.length)
+              rand_pos = color_array[random_number]
+            end
+            rand_pos
+          else
+            pos
+          end
+        end
+        p guess
+      else
+        guess = create_guess(guess)
+      end
+      guess
+    end
+
+    def create_guess(guess)
+      guess.map.with_index do |pos, i|
+        if pos.nil?
+          random_number = rand(color_array.length)
+          rand_pos = color_array[random_number]
+          unless prev_guess.nil?
+            while rand_pos == prev_guess[i]
+              random_number = rand(color_array.length)
+              rand_pos = color_array[random_number]
+            end
+          end
+          rand_pos
+        else
+          pos
+        end
+      end
     end
 
     def display_rules
@@ -180,8 +258,6 @@ module Mastermind
       puts 'Possible colors:'
       COLORS.each { |color| puts "- #{color}" }
     end
-
-    attr_reader :type
   end
 end
 
