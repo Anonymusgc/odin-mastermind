@@ -7,7 +7,7 @@ module Mastermind
 
   # mastermind game class
   class Game
-    attr_accessor :turns, :game_end, :secret_code, :codemaker, :codebreaker
+    attr_accessor :turns, :game_end, :secret_code, :codemaker, :codebreaker, :response
 
     def initialize
       @turns = 8
@@ -20,12 +20,13 @@ module Mastermind
     def play
       choose_gamemode
       codebreaker.display_rules
+
       self.secret_code = codemaker.create_code
 
       until game_end
-        guess = codebreaker.take_guess
-        check_guess(guess)
-        update_turns
+        guess = codebreaker.take_guess(response)
+        self.response = check_guess(guess)
+        update_turns if game_end == false
       end
     end
 
@@ -57,6 +58,7 @@ module Mastermind
     end
 
     def display_hints(guess)
+      res = [[], []]
       puts "\nHints:"
       buff_code = secret_code.clone
       buff_guess = []
@@ -64,8 +66,9 @@ module Mastermind
       guess.each_with_index do |pos, i|
         if pos == secret_code[i]
           puts 'red key peg'
+          res[0].push(1)
           incorrect_guess = false
-          buff_code.delete_at(i)
+          buff_code.delete_at(buff_code.index(pos) || buff_code.length)
         else
           buff_guess.push(pos)
         end
@@ -74,12 +77,15 @@ module Mastermind
         next unless buff_code.include?(pos)
 
         puts 'white key peg'
+        res[1].push(1)
         incorrect_guess = false
         buff_code.delete_at(buff_code.index(pos))
       end
 
       puts "\nNo hints, incorrect guess\n" if incorrect_guess
       puts "\n"
+      # p res
+      res
     end
 
     def update_turns
@@ -162,6 +168,10 @@ module Mastermind
         random_number = rand(COLORS.length)
         COLORS[random_number]
       end
+    end
+
+    def take_guess
+      guess = Array.new(HOLES)
     end
 
     def display_rules
