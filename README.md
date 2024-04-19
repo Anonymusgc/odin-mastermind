@@ -1,5 +1,3 @@
 # odin-mastermind
 
-<!-- Colors -->
-<!-- red, blue, green, yellow, purple, orange -->
-<!-- 4 holes -->
+Mastermind game made in ruby, game has 2 gamemodes, you can either create code or guess code

@@ -7,8 +7,6 @@ module Mastermind
 
   # mastermind game class
   class Game
-    attr_accessor :turns, :game_end, :secret_code, :codemaker, :codebreaker, :response
-
     def initialize
       @turns = 8
       @game_end = false
@@ -30,6 +28,10 @@ module Mastermind
         update_turns if game_end == false
       end
     end
+
+    private
+
+    attr_accessor :turns, :game_end, :secret_code, :codemaker, :codebreaker, :response
 
     def choose_gamemode
       puts '--------------------------------------'
@@ -101,13 +103,13 @@ module Mastermind
     def codebreaker_wins
       puts "\n #{codebreaker.type.capitalize} Player wins"
       self.game_end = true
-      p secret_code
+      puts "Code: #{secret_code}"
     end
 
     def codemaker_wins
       puts "\n #{codemaker.type.capitalize} Player wins!"
       self.game_end = true
-      p secret_code
+      puts "Code: #{secret_code}"
     end
   end
 
@@ -116,6 +118,8 @@ module Mastermind
     def initialize
       @type = 'human'
     end
+
+    attr_reader :type
 
     def display_rules
       puts "\nTo guess the code you should input #{HOLES} color names, for example:"
@@ -147,6 +151,8 @@ module Mastermind
       end
     end
 
+    private
+
     def correct_input?(input)
       if input.length != HOLES || input.any? { |color| !COLORS.include?(color) }
         false
@@ -154,14 +160,11 @@ module Mastermind
         true
       end
     end
-
-    attr_reader :type
   end
 
   # computer player class
   class ComputerPlayer
     attr_reader :type
-    attr_accessor :prev_guess, :color_array
 
     def initialize
       @type = 'computer'
@@ -177,9 +180,10 @@ module Mastermind
     end
 
     def take_guess(response)
+      sleep(1)
       guess = Array.new(HOLES)
 
-      if (response[0].empty? || response[0].all? { |pos| pos == 0 }) && response[1].empty? && !prev_guess.nil?
+      if (response[0].empty? || response[0].all?(&:zero?)) && response[1].empty? && !prev_guess.nil?
         prev_guess.each do |pos|
           color_array.delete(pos)
         end
@@ -192,64 +196,8 @@ module Mastermind
       guess = handle_white_pegs(guess, response)
 
       self.prev_guess = guess
-      p guess
+      puts "Computer guess: #{guess}"
       guess
-    end
-
-    def handle_white_pegs(guess, response)
-      rand_pos = ''
-      if response[1].length > 1 && !prev_guess.nil?
-        guess = guess.map.with_index do |pos, i|
-          if pos.nil?
-            loop do
-              random_number = rand(response[1].length)
-              rand_pos = response[1][random_number]
-              break if rand_pos != prev_guess[i]
-            end
-            rand_pos
-          else
-            pos
-          end
-        end
-        p guess
-      elsif response[1].length == 1 && !prev_guess.nil?
-        guess = guess.map.with_index do |pos, i|
-          if pos.nil?
-
-            random_number = rand(response[1].length)
-            rand_pos = response[1][random_number]
-            if rand_pos == prev_guess[i]
-              random_number = rand(color_array.length)
-              rand_pos = color_array[random_number]
-            end
-            rand_pos
-          else
-            pos
-          end
-        end
-        p guess
-      else
-        guess = create_guess(guess)
-      end
-      guess
-    end
-
-    def create_guess(guess)
-      guess.map.with_index do |pos, i|
-        if pos.nil?
-          random_number = rand(color_array.length)
-          rand_pos = color_array[random_number]
-          unless prev_guess.nil?
-            while rand_pos == prev_guess[i]
-              random_number = rand(color_array.length)
-              rand_pos = color_array[random_number]
-            end
-          end
-          rand_pos
-        else
-          pos
-        end
-      end
     end
 
     def display_rules
@@ -257,6 +205,44 @@ module Mastermind
       puts "Code length should be: #{HOLES}"
       puts 'Possible colors:'
       COLORS.each { |color| puts "- #{color}" }
+    end
+
+    private
+
+    attr_accessor :prev_guess, :color_array
+
+    def handle_white_pegs(guess, response)
+      color_arr = []
+      color_arr2 = []
+      if response[1].length > 1
+        color_arr = color_arr2 = response[1]
+      elsif response[1].length == 1
+        color_arr = response[1]
+        color_arr2 = color_array
+      else
+        color_arr = color_arr2 = color_array
+      end
+      create_guess(guess, color_arr, color_arr2)
+    end
+
+    def create_guess(guess, color_arr, color_arr2)
+      rand_pos = ''
+      # p color_arr
+      guess.map.with_index do |pos, i|
+        if pos.nil?
+          random_number = rand(color_arr.length)
+          rand_pos = color_arr[random_number]
+          unless prev_guess.nil?
+            while rand_pos == prev_guess[i]
+              random_number = rand(color_arr2.length)
+              rand_pos = color_arr2[random_number]
+            end
+          end
+          rand_pos
+        else
+          pos
+        end
+      end
     end
   end
 end
